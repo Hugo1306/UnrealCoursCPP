@@ -3,6 +3,7 @@
 #include "TPS2GameMode.h"
 #include "TPS2Character.h"
 #include "UObject/ConstructorHelpers.h"
+//#include "TPS2Character.generated.h"
 
 ATPS2GameMode::ATPS2GameMode()
 {
@@ -12,4 +13,10 @@ ATPS2GameMode::ATPS2GameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+}
+
+void ATPS2GameMode::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
 }

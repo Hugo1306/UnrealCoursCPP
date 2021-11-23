@@ -18,8 +18,14 @@ class ATPS2Character : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	class USceneComponent* ItemPosition;
+
 public:
 	ATPS2Character();
+
+	virtual void Tick(float DeltaTime) override;
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
@@ -28,6 +34,16 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
+
+	UPROPERTY(VisibleAnywhere)
+	bool isPicked;
+
+	UPROPERTY(EditAnywhere)
+	int Health;
+
+	UPROPERTY(VisibleAnywhere)
+	AActor* PickedUpObject;
+
 
 protected:
 
@@ -57,6 +73,9 @@ protected:
 
 	/** Handler for when a touch input stops. */
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
+
+	void PickUpObject();
+	bool DoTrace(FHitResult* Hit, FCollisionQueryParams* TraceParams);
 
 protected:
 	// APawn interface

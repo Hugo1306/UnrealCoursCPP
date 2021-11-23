@@ -8,6 +8,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "DrawDebugHelpers.h"
+#include "TPS2GameMode.h"
+#include "Kismet/GameplayStatics.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ATPS2Character
@@ -43,6 +46,11 @@ ATPS2Character::ATPS2Character()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	// Create a item position
+	ItemPosition = CreateDefaultSubobject<USceneComponent>(TEXT("ItemPosition"));
+	ItemPosition->SetupAttachment(RootComponent);
+	ItemPosition->SetRelativeLocation(FVector(130, 0, 10));
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
@@ -59,6 +67,8 @@ void ATPS2Character::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATPS2Character::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATPS2Character::MoveRight);
+
+	PlayerInputComponent->BindAction("PickUp", IE_Pressed, this, &ATPS2Character::PickUpObject);
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
@@ -137,4 +147,94 @@ void ATPS2Character::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
+}
+
+void ATPS2Character::PickUpObject() 
+{
+	if (!isPicked) 
+	{
+		FHitResult Hit(ForceInit);
+		FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Trace")), false, this);
+
+		bool ValueTrace = DoTrace(&Hit, &TraceParams);
+
+		if (ValueTrace && Hit.GetActor()->ActorHasTag(FName(TEXT("PUO"))))
+		{
+			PickedUpObject = Hit.GetActor();
+
+			FAttachmentTransformRules ATR = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, true);
+
+			//PickedUpObject->AttachToComponent(ItemPosition, ATR, NAME_None);
+			PickedUpObject->GetRootComponent()->AttachToComponent(ItemPosition, ATR, NAME_None);
+
+			// Simulate Physics
+			UStaticMeshComponent* MeshComp = Cast<UStaticMeshComponent>(PickedUpObject->GetComponentByClass(UStaticMeshComponent::StaticClass()));
+
+			if (MeshComp == nullptr)
+				return;
+
+			MeshComp->SetSimulatePhysics(false);
+			
+			isPicked = true;
+		}
+		
+	}
+	else 
+	{
+		FDetachmentTransformRules DTR = FDetachmentTransformRules(EDetachmentRule::KeepWorld, EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, true);
+
+		PickedUpObject->GetRootComponent()->DetachFromComponent(DTR);
+
+		// Simulate Physics
+		UStaticMeshComponent* MeshComp = Cast<UStaticMeshComponent>(PickedUpObject->GetComponentByClass(UStaticMeshComponent::StaticClass()));
+
+		if (MeshComp == nullptr)
+			return;
+
+		MeshComp->SetSimulatePhysics(true);
+
+		isPicked = false;
+	}
+}
+
+bool ATPS2Character::DoTrace(FHitResult* Hit, FCollisionQueryParams* TraceParams) 
+{
+	FVector WorldLocation = GetActorLocation();
+	FVector WorldRotation = GetActorRotation().Vector();
+
+	FVector End = WorldLocation + (WorldRotation * 1500);
+
+	TraceParams->bTraceComplex = true;
+	TraceParams->bReturnPhysicalMaterial = true;
+
+	bool DidTrace = GetWorld()->LineTraceSingleByObjectType(*Hit, WorldLocation, End, ECC_PhysicsBody, *TraceParams);
+
+	return DidTrace;
+}
+
+void ATPS2Character::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	FVector WorldLocation = GetActorLocation();
+	FVector WorldRotation = GetActorRotation().Vector();
+
+	FVector End = WorldLocation + (WorldRotation * 1500);
+
+	DrawDebugLine(GetWorld(), WorldLocation, End, FColor::Red, false, 0, 0, 2);
+
+
+	if (Health <= 0) 
+	{
+		/*ATPS2GameMode* GameMode = Cast<ATPS2GameMode>(GetWorld()->GetAuthGameMode());
+
+		if (GameMode == nullptr)
+			return;
+
+		GameMode->ResetLevel();*/
+
+		UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
+		
+	}
+
 }

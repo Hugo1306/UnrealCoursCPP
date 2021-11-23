@@ -13,6 +13,8 @@ class ATPS2GameMode : public AGameModeBase
 
 public:
 	ATPS2GameMode();
+
+	virtual void Tick(float DeltaTime) override;
 };
 
 
