@@ -171,10 +171,8 @@ void ATPS2Character::PickUpObject()
 
 			FAttachmentTransformRules ATR = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, true);
 
-			//PickedUpObject->AttachToComponent(ItemPosition, ATR, NAME_None);
 			PickedUpObject->GetRootComponent()->AttachToComponent(ItemPosition, ATR, NAME_None);
 
-			// Simulate Physics
 			UStaticMeshComponent* MeshComp = Cast<UStaticMeshComponent>(PickedUpObject->GetComponentByClass(UStaticMeshComponent::StaticClass()));
 
 			if (MeshComp == nullptr)
@@ -192,7 +190,6 @@ void ATPS2Character::PickUpObject()
 
 		PickedUpObject->GetRootComponent()->DetachFromComponent(DTR);
 
-		// Simulate Physics
 		UStaticMeshComponent* MeshComp = Cast<UStaticMeshComponent>(PickedUpObject->GetComponentByClass(UStaticMeshComponent::StaticClass()));
 
 		if (MeshComp == nullptr)
@@ -233,14 +230,14 @@ void ATPS2Character::Tick(float DeltaTime)
 
 	if (Health <= 0) 
 	{
-		/*ATPS2GameMode* GameMode = Cast<ATPS2GameMode>(GetWorld()->GetAuthGameMode());
 
-		if (GameMode == nullptr)
-			return;
+		GetMesh()->SetSimulatePhysics(true);
+		GetCharacterMovement()->DisableMovement();
 
-		GameMode->ResetLevel();*/
+		FTimerHandle UnusedHandle;
+		ATPS2GameMode* GameMode = (ATPS2GameMode*)GetWorld()->GetAuthGameMode();
 
-		UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
+		GetWorldTimerManager().SetTimer(UnusedHandle, this, &ATPS2Character::ReloadScene, GameMode->DurationToDie, false);
 		
 	}
 
@@ -251,4 +248,9 @@ void ATPS2Character::ShootProjectile()
 	FVector SpawnLocation = GetControlRotation().Vector() * 100 + GetActorLocation();
 
 	GetWorld()->SpawnActor<AProjectile>(Projectile, SpawnLocation, GetControlRotation());
+}
+
+void ATPS2Character::ReloadScene() 
+{
+	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 }

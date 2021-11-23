@@ -84,6 +84,8 @@ protected:
 
 	void ShootProjectile();
 
+	void ReloadScene();
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

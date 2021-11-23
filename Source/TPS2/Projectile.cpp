@@ -62,9 +62,8 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 
 	if (OtherActor->ActorHasTag(FName(TEXT("Wall"))))
 	{
-		FRotator RotationMat = FRotator(90, -90, 0);
-
-		UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(this, SplashMaterial, FVector(100, 100, 100), Hit.Location, Hit.Normal.Rotation(), 3);
+		
+		UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(this, SplashMaterial, FVector(100, 100, 100), Hit.Location, Hit.Normal.Rotation() + FRotator(0, 180, 0), 3);
 		Decal->SetFadeOut(0, 3, true);
 		Destroy();
 

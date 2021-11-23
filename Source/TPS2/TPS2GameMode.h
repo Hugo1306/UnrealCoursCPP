@@ -15,6 +15,9 @@ public:
 	ATPS2GameMode();
 
 	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DurationToDie;
 };
 
 
