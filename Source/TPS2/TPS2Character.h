@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Projectile.h" 
 #include "TPS2Character.generated.h"
 
 UCLASS(config=Game)
@@ -44,6 +45,9 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	AActor* PickedUpObject;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AProjectile> Projectile;
+
 
 protected:
 
@@ -75,7 +79,10 @@ protected:
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 
 	void PickUpObject();
+
 	bool DoTrace(FHitResult* Hit, FCollisionQueryParams* TraceParams);
+
+	void ShootProjectile();
 
 protected:
 	// APawn interface

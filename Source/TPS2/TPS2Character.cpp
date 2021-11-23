@@ -51,6 +51,12 @@ ATPS2Character::ATPS2Character()
 	ItemPosition->SetupAttachment(RootComponent);
 	ItemPosition->SetRelativeLocation(FVector(130, 0, 10));
 
+
+	/*static ConstructorHelpers::FObjectFinder<AProjectile> Project(TEXT("AProjectile'/C++ Classes/TPS2/Projectile.h'"));
+
+	if (Project.Succeeded())
+		Projectile = Project.Object;*/
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
@@ -69,6 +75,7 @@ void ATPS2Character::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATPS2Character::MoveRight);
 
 	PlayerInputComponent->BindAction("PickUp", IE_Pressed, this, &ATPS2Character::PickUpObject);
+	PlayerInputComponent->BindAction("ShootProjectile", IE_Pressed, this, &ATPS2Character::ShootProjectile);
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
@@ -237,4 +244,11 @@ void ATPS2Character::Tick(float DeltaTime)
 		
 	}
 
+}
+
+void ATPS2Character::ShootProjectile() 
+{
+	FVector SpawnLocation = GetControlRotation().Vector() * 100 + GetActorLocation();
+
+	GetWorld()->SpawnActor<AProjectile>(Projectile, SpawnLocation, GetControlRotation());
 }

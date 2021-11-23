@@ -64,6 +64,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 
 		FRotator RotationMat = FRotator(-90, Hit.Normal.Y, Hit.Normal.Z + 90);
 		UGameplayStatics::SpawnDecalAtLocation(this, SplashMaterial, FVector(100, 100, 100), Hit.Location, RotationMat, 0);
+		Destroy();
 
 	}
 	else
