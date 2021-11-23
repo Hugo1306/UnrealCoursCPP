@@ -16,19 +16,19 @@ AProjectile::AProjectile()
 
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("NomMesh"));
 
-	if (SphereMesh.Succeeded())
+	if (SphereMesh.Succeeded()) 
 		StaticMesh->SetStaticMesh(SphereMesh.Object);
+
+	StaticMesh->SetSimulatePhysics(false);
+	StaticMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+
+	RootComponent = StaticMesh;
+
 
 	static ConstructorHelpers::FObjectFinder<UMaterial> SplashMat(TEXT("Material'/Game/ThirdPersonCPP/SplashMat.SplashMat'"));
 	
 	if(SplashMat.Succeeded())
 		SplashMaterial = SplashMat.Object;
-
-
-	StaticMesh->SetSimulatePhysics(true);
-	StaticMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
-
-	RootComponent = StaticMesh;
 
 	SetActorScale3D(FVector(0.2f, 0.2f, 0.2f));
 
@@ -58,12 +58,14 @@ void AProjectile::Tick(float DeltaTime)
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) 
 {
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Enter Function"));
 
 	if (OtherActor->ActorHasTag(FName(TEXT("Wall"))))
 	{
+		FRotator RotationMat = FRotator(90, -90, 0);
 
-		FRotator RotationMat = FRotator(-90, Hit.Normal.Y, Hit.Normal.Z + 90);
-		UGameplayStatics::SpawnDecalAtLocation(this, SplashMaterial, FVector(100, 100, 100), Hit.Location, RotationMat, 0);
+		UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(this, SplashMaterial, FVector(100, 100, 100), Hit.Location, Hit.Normal.Rotation(), 3);
+		Decal->SetFadeOut(0, 3, true);
 		Destroy();
 
 	}
