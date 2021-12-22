@@ -39,7 +39,7 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	bool isPicked;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int Health;
 
 	UPROPERTY(VisibleAnywhere)
